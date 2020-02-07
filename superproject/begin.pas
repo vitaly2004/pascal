@@ -1,29 +1,30 @@
 ﻿type row = record
-  x1, x2, x3, b: real;
-  constructor(a, e, c, d: real);
+  data: array of real;
+  length: integer := 4;
+  constructor(a: real := 0; e: real := 0; c: real := 0; d: real := 0);
   begin
-    x1 := a;
-    x2 := e;
-    x3 := c;
-    b := d;
+    data := new real[4];
+    data[0] := a;
+    data[1] := e;
+    data[2] := c;
+    data[3] := d;
   end;
   function ToString(): string; override;
   begin
-    result := String.Format('({0}; {1}; {2}; {3})', x1, x2, x3, b);
+    result := '(' + data[0];
+    for var i := 1 to length - 1 do
+      result += '; ' + data[i].ToString();
+    result += ')';
   end;
   class function operator+(r1, r2: row): row;
   begin
-    result.x1 := r1.x1 + r2.x1;
-    result.x2 := r1.x2 + r2.x2;
-    result.x3 := r1.x3 + r2.x3;
-    result.b := r1.b + r2.b;
+    for var i := 0 to r1.length - 1 do
+      result.data[i] := r1.data[i] + r2.data[i];
   end;
   class function operator*(k: real; r: row): row;
   begin
-    result.x1 := k * r.x1;
-    result.x2 := k * r.x2;
-    result.x3 := k * r.x3;
-    result.b := k * r.b;
+    for var i := 0 to r.length - 1 do
+      result.data[i] := k * r.data[i];
   end;
   class function operator*(r: row; k: real): row;
   begin
@@ -40,38 +41,58 @@
 end;
 
 type linearSystem = record
-  r1, r2, r3: row;
-  constructor(a1, a2, a3: row);
+  rows: array of row;
+  size: integer := 3;
+  constructor(r1, r2, r3: row);
   begin
-    r1 := a1;
-    r2 := a2;
-    r3 := a3;
+    rows := new row[3];
+    rows[0] := r1;
+    rows[1] := r2;
+    rows[2] := r3;
   end;
   function ToString(): string; override;
   begin
-    result := r1.ToString() + #10 + r2.ToString() + #10 + r3.ToString() + #10;
+    result := '';
+    for var i := 0 to size - 1 do
+      result += rows[i] + #10;
   end;
   procedure swapRows(n1, n2: integer);
   var
     temp: row;
   begin
-    if (n1 = 1) and (n2 = 2) then
+    temp := rows[n1];
+    rows[n1] := rows[n2];
+    rows[n2] := temp;
+  end;
+  
+  procedure stepGaussForward(k: integer);
+  var i: integer;
+  begin
+    if rows[k][k] = 0 then
     begin
-      temp := r1;
-      r1 := r2;
-      r2 := temp;
+      i := k + 1;
+      while rows[i][k] = 0 do
+        i += 1;
+      swapRows(k , i);
     end;
+    // coming soon
+  end;
+  
+  procedure gauss();
+  begin  
+    for var i := 1 to 3 - 1 do
+      stepGauss(i);
   end;
 end;
 
 var
   r1 := new row(1, 2, 3, 4);
   r2 := new row(5, 6, 7, 8);
-  r3 := new row(1, 2, 3, 4);
+  r3 := new row(4, 3, 2, 1);
   s := new linearSystem(r1, r2, r3);
   
 begin
   writeln(s);
-  s.swapRows(1, 2);
+  s.swapRows(0, 2);
   write(s);
 end.

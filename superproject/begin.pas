@@ -1,4 +1,6 @@
-﻿type row = record
+﻿uses matrices;
+
+type row = record
   data: array of real;
   length: integer := 4;
   constructor(a: real := 0; e: real := 0; c: real := 0; d: real := 0);
@@ -68,10 +70,10 @@ type linearSystem = record
   procedure stepGaussForward(k: integer);
   var i: integer;
   begin
-    if rows[k][k] = 0 then
+    if rows[k].data[k] = 0 then
     begin
       i := k + 1;
-      while rows[i][k] = 0 do
+      while rows[i].data[k] = 0 do
         i += 1;
       swapRows(k , i);
     end;
@@ -81,17 +83,24 @@ type linearSystem = record
   procedure gauss();
   begin  
     for var i := 1 to 3 - 1 do
-      stepGauss(i);
+      stepGaussForward(i);
   end;
+  
+  function matrixOfCoef(): matrix;
+  begin
+    Result := new matrix(size);
+    
+  end;
+  
 end;
 
-var
-  r1 := new row(1, 2, 3, 4);
-  r2 := new row(5, 6, 7, 8);
-  r3 := new row(4, 3, 2, 1);
-  s := new linearSystem(r1, r2, r3);
+
   
 begin
+  var r1 := new row(1, 2, 3, 4);
+  var r2 := new row(5, 6, 7, 8);
+  var r3 := new row(4, 3, 2, 1);
+  var s := new linearSystem(r1, r2, r3);
   writeln(s);
   s.swapRows(0, 2);
   write(s);

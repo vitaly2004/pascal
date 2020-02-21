@@ -1,4 +1,9 @@
-﻿type matrix = record
+﻿unit matrices;
+
+interface
+
+/// реализует матрицы
+type matrix = record
   data: array[,] of real;
   size: integer;
   
@@ -72,12 +77,32 @@
  
   function det(): real; 
   begin
-    
+    if size = 2 then
+    begin
+      Result := data[0, 0] * data[1, 1] - data[0, 1] * data[1, 0];
+      exit;
+    end;
+    Result := 0;
+    var sign := 1;
+    for var i := 0 to size - 1 do
+    begin
+      result += sign * data[0, i] * alg(0, i).det();
+      sign *= -1;
+    end;
   end;
 end;
 
+/// считает факториал
+function factorial(n: integer): integer;
+
+implementation
+
+function factorial(n: integer): integer;
 begin
-  var a: matrix := new matrix(3);
-  a.inFromKeyboard();
-  write(a.alg(1, 1));
+  result := 0;
+end;
+
+
+begin
+  writeln('Подключён модуль для работы с матрицами');
 end.

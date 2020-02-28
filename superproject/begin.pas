@@ -2,14 +2,12 @@
 
 type row = record
   data: array of real;
-  length: integer := 4;
-  constructor(a: real := 0; e: real := 0; c: real := 0; d: real := 0);
+  length: integer;
+  
+  constructor(n: integer);
   begin
-    data := new real[4];
-    data[0] := a;
-    data[1] := e;
-    data[2] := c;
-    data[3] := d;
+    data := new real[n];
+    length := n;
   end;
   function ToString(): string; override;
   begin
@@ -43,15 +41,46 @@ type row = record
 end;
 
 type linearSystem = record
+  data: array[,] of real;
+  keys: array of real;
+  size: integer;
+  {
   rows: array of row;
-  size: integer := 3;
-  constructor(r1, r2, r3: row);
+  size: integer;
+  constructor(n: integer);
   begin
-    rows := new row[3];
-    rows[0] := r1;
-    rows[1] := r2;
-    rows[2] := r3;
+    rows := new row[n];
+    for var i := 0 to n - 1 do
+      rows[i] := new row(n + 1);
+    size := n;
   end;
+  }
+  
+  constructor(n: integer);
+  begin
+    data := new real[n, n + 1];
+    keys := new real[n];
+    size := n;
+  end;
+  
+  procedure inFromKeyboard();
+  begin
+    for var i := 0 to size - 1 do
+      for var j := 0 to size do
+        read(data[i, j]);
+  end;
+  
+  function ToString(): string; override;
+  begin
+    result := '';
+    for var i := 0 to size - 1 do
+    begin
+      for var j := 0 to size do
+        Result += data[i, j].ToString() + ' ';
+      Result += #10;
+    end;
+  end;
+  {
   function ToString(): string; override;
   begin
     result := '';
@@ -85,23 +114,32 @@ type linearSystem = record
     for var i := 1 to 3 - 1 do
       stepGaussForward(i);
   end;
-  
-  function matrixOfCoef(): matrix;
+  }
+  function kramerMatrix(k: integer): matrix;
   begin
     Result := new matrix(size);
-    
+    for var i := 0 to size - 1 do
+      for var j := 0 to size - 1 do
+        Result.data[i, j] := data[i, j];
+    if k = 0 then exit;
+    for var i := 0 to size - 1 do
+      Result.data[i, k - 1] := data[i, size];
   end;
   
+  procedure kramer();
+  begin
+    var delta: real := kramerMatrix(0).det();
+    for var i := 0 to size - 1 do
+      keys[i] := kramerMatrix(i + 1).det() / delta; 
+  end;
 end;
 
 
   
 begin
-  var r1 := new row(1, 2, 3, 4);
-  var r2 := new row(5, 6, 7, 8);
-  var r3 := new row(4, 3, 2, 1);
-  var s := new linearSystem(r1, r2, r3);
-  writeln(s);
-  s.swapRows(0, 2);
-  write(s);
+  var s := new linearSystem(3);
+  s.inFromKeyboard();
+  writeln;
+  s.kramer();
+  Writeln(s.keys);
 end.

@@ -18,69 +18,70 @@ type row = record
   end;
   class function operator+(r1, r2: row): row;
   begin
+    Result := new row(r1.length);
     for var i := 0 to r1.length - 1 do
       result.data[i] := r1.data[i] + r2.data[i];
   end;
   class function operator*(k: real; r: row): row;
   begin
+    Result := new row(r.length);
     for var i := 0 to r.length - 1 do
       result.data[i] := k * r.data[i];
   end;
   class function operator*(r: row; k: real): row;
   begin
+    Result := new row(r.length);
     result := k * r;
   end;
   class function operator-(r: row): row;
   begin
+    Result := new row(r.length);
     result := (-1) * r;
   end;
   class function operator-(r1, r2: row): row;
   begin
+    Result := new row(r1.length);
     result := r1 + (-r2);
   end;
 end;
 
 type linearSystem = record
-  data: array[,] of real;
-  keys: array of real;
-  size: integer;
-  {
   rows: array of row;
   size: integer;
+  keys: array of real;
+  
   constructor(n: integer);
   begin
     rows := new row[n];
     for var i := 0 to n - 1 do
       rows[i] := new row(n + 1);
-    size := n;
-  end;
-  }
-  
-  constructor(n: integer);
-  begin
-    data := new real[n, n + 1];
     keys := new real[n];
     size := n;
   end;
+  
+  procedure setEl(i, j: integer; value: real);
+  begin
+    rows[i].data[j] := value;
+  end;
+  
+  function getEl(i, j: integer): real;
+  begin
+    result := rows[i].data[j];
+  end;
+  
+  property el[i, j: integer]: real Read getEl Write setEl; default;
   
   procedure inFromKeyboard();
   begin
     for var i := 0 to size - 1 do
       for var j := 0 to size do
-        read(data[i, j]);
+      begin
+        var x: real;
+        Read(x);
+        el[i, j] := x;
+      end;
   end;
   
-  function ToString(): string; override;
-  begin
-    result := '';
-    for var i := 0 to size - 1 do
-    begin
-      for var j := 0 to size do
-        Result += data[i, j].ToString() + ' ';
-      Result += #10;
-    end;
-  end;
-  {
   function ToString(): string; override;
   begin
     result := '';
@@ -97,33 +98,37 @@ type linearSystem = record
   end;
   
   procedure stepGaussForward(k: integer);
-  var i: integer;
   begin
-    if rows[k].data[k] = 0 then
+    if el[k, k] = 0 then
     begin
-      i := k + 1;
-      while rows[i].data[k] = 0 do
+      var i := k + 1;
+      while el[i, k] = 0 do
         i += 1;
       swapRows(k , i);
     end;
-    // coming soon
+    for var i := k to size - 1 do
+    begin
+      rows[i] := rows[i] - el[i, k] / el[k, k] * rows[k]; 
+    end;
+      
+      
   end;
   
   procedure gauss();
   begin  
-    for var i := 1 to 3 - 1 do
+    for var i := 0 to size - 2 do
       stepGaussForward(i);
   end;
-  }
+  
   function kramerMatrix(k: integer): matrix;
   begin
     Result := new matrix(size);
     for var i := 0 to size - 1 do
       for var j := 0 to size - 1 do
-        Result.data[i, j] := data[i, j];
+        Result.data[i, j] := el[i, j];
     if k = 0 then exit;
     for var i := 0 to size - 1 do
-      Result.data[i, k - 1] := data[i, size];
+      Result.data[i, k - 1] := el[i, size];
   end;
   
   procedure kramer();
@@ -140,6 +145,6 @@ begin
   var s := new linearSystem(3);
   s.inFromKeyboard();
   writeln;
-  s.kramer();
-  Writeln(s.keys);
+  s.gauss();
+  Write(s);
 end.

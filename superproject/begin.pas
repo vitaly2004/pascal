@@ -106,18 +106,27 @@ type linearSystem = record
         i += 1;
       swapRows(k , i);
     end;
-    for var i := k to size - 1 do
+    for var i := k + 1 to size - 1 do
     begin
       rows[i] := rows[i] - el[i, k] / el[k, k] * rows[k]; 
     end;
-      
-      
+  end;
+  
+  procedure stepGaussBackward(i: integer);
+  begin 
+    for var k := i - 1 downto 0 do
+    begin
+      rows[k] := rows[k] - el[k, i] / el[i, i] * rows[i]; 
+    end;
   end;
   
   procedure gauss();
   begin  
     for var i := 0 to size - 2 do
       stepGaussForward(i);
+      
+    for var i := size - 1 downto 1 do
+      stepGaussBackward(i);
   end;
   
   function kramerMatrix(k: integer): matrix;
@@ -145,6 +154,6 @@ begin
   var s := new linearSystem(3);
   s.inFromKeyboard();
   writeln;
-  s.gauss();
+  s.Gauss();
   Write(s);
 end.

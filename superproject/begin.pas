@@ -127,6 +127,9 @@ type linearSystem = record
       
     for var i := size - 1 downto 1 do
       stepGaussBackward(i);
+      
+    for var i := 0 to size - 1 do
+      rows[i] := rows[i] * (1 / el[i, i]);
   end;
   
   function kramerMatrix(k: integer): matrix;
